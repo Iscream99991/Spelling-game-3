@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Custom Spelling Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin-top: 30px;
+    }
+    input {
+      padding: 10px;
+      margin: 5px;
+      font-size: 16px;
+    }
+    button {
+      padding: 10px 15px;
+      margin: 5px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .letter-btn {
+      padding: 10px 20px;
+      font-size: 20px;
+      margin: 5px;
+      cursor: pointer;
+    }
+    .feedback {
+      font-size: 24px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🧠 Spelling Game</h1>
+
+  <!-- ✏️ Word Input Section -->
+  <div id="setup-section">
+    <h3>Enter a word and clue:</h3>
+    <input type="text" id="word-input" placeholder="e.g. elephant">
+    <input type="text" id="clue-input" placeholder="e.g. A big animal with a trunk">
+    <br>
+    <button onclick="addWord()">Add Word</button>
+    <button onclick="startGame()">Start Game</button>
+    <h4>Words to learn today:</h4>
+    <ul id="word-list"></ul>
+  </div>
+
+  <!-- 🎮 Game Section -->
+  <div id="game-section" style="display: none;">
+    <p id="clue">Clue: </p>
+    <div id="letters"></div>
+    <div class="feedback" id="feedback"></div>
+    <button id="next-btn" onclick="nextWord()">Next Word ➡️</button>
+  </div>
+
+  <script>
+    let wordList = [];
+    let currentIndex = 0;
+    let userAnswer = "";
+
+    function addWord() {
+      const word = document.getElementById("word-input").value.trim().toLowerCase();
+      const clue = document.getElementById("clue-input").value.trim();
+
+      if (word && clue) {
+        wordList.push({ word, clue });
+        const listItem = document.createElement("li");
+        listItem.innerText = `${word} — ${clue}`;
+        document.getElementById("word-list").appendChild(listItem);
+        document.getElementById("word-input").value = "";
+        document.getElementById("clue-input").value = "";
+      } else {
+        alert("Please enter both the word and its clue.");
+      }
+    }
+
+    function startGame() {
+      if (wordList.length === 0) {
+        alert("Add at least one word to start!");
+        return;
+      }
+
+      document.getElementById("setup-section").style.display = "none";
+      document.getElementById("game-section").style.display = "block";
+      loadWord();
+    }
+
+    function shuffle(word) {
+      return word.split("").sort(() => Math.random() - 0.5);
+    }
+
+    function loadWord() {
+      userAnswer = "";
+      document.getElementById("letters").innerHTML = "";
+      document.getElementById("feedback").innerText = "";
+      document.getElementById("next-btn").style.display = "none";
+
+      const currentWord = wordList[currentIndex];
+      document.getElementById("clue").innerText = "Clue: " + currentWord.clue;
+
+      const shuffled = shuffle(currentWord.word);
+
+      shuffled.forEach(letter => {
+        const btn = document.createElement("button");
+        btn.innerText = letter;
+        btn.classList.add("letter-btn");
+        btn.onclick = () => {
+          userAnswer += letter;
+          btn.disabled = true;
+
+          if (userAnswer.length === currentWord.word.length) {
+            if (userAnswer === currentWord.word) {
+              document.getElementById("feedback").innerText = "✅ Correct!";
+            } else {
+              document.getElementById("feedback").innerText = `❌ Oops! The word was "${currentWord.word}"`;
+            }
+            document.getElementById("next-btn").style.display = "inline-block";
+          }
+        };
+        document.getElementById("letters").appendChild(btn);
+      });
+    }
+
+    function nextWord() {
+      currentIndex++;
+      if (currentIndex < wordList.length) {
+        loadWord();
+      } else {
+        if (confirm("🎉 You've finished all the words! Do you want to play again with the same words?")) {
+          currentIndex = 0;
+          loadWord();
+          document.getElementById("feedback").innerText = "";
+        } else {
+          document.getElementById("game-section").style.display = "none";
+          document.getElementById("setup-section").style.display = "block";
+          document.getElementById("feedback").innerText = "";
+          document.getElementById("letters").innerHTML = "";
+          currentIndex = 0;
+          wordList = [];
+          document.getElementById("word-list").innerHTML = "";
+        }
+      }
+    }
+  </script>
+
+</body>
+</html>
